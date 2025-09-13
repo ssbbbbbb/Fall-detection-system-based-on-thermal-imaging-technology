@@ -39,3 +39,6 @@ python gru_train.py
 
 ## 跌倒混淆矩陣
 ![Accuracy](混淆矩陣.jpg)
+
+## DEMO影片
+https://drive.google.com/file/d/1F4gGI4SRWbgN1tfDQpohJoe9S3fSXMgZ/view?usp=drive_link
