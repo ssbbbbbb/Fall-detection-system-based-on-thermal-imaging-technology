@@ -35,7 +35,7 @@ python gru_train.py
 ![Accuracy](注意力.jpg)
 
 ## yolo
-![Accuracy](result.png)
+![Accuracy](results.png)
 
 ## 跌倒混淆矩陣
 ![Accuracy](混淆矩陣.jpg)
