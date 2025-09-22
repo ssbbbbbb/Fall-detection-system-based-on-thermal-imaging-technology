@@ -30,11 +30,11 @@ python gru_train.py
 ```
 
 # 訓練結果
-## gru
+## 1.gru
 ![Accuracy](gru_result.jpg)
 ![Accuracy](注意力.jpg)
 
-## yolo
+## 2.yolo
 ![Accuracy](results.png)
 
 ## 跌倒混淆矩陣
