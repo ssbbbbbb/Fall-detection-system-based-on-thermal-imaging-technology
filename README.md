@@ -1,4 +1,4 @@
-# Fall-detection-system-based-on-thermal-imaging-technology
+# A Low-Resolution Thermal Imaging-Based System for Skeleton Extraction and Fall Detection
 
 # 硬體設備
 1.thermal camera hat捕捉熱像
