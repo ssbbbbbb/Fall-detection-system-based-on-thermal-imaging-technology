@@ -24,6 +24,30 @@ python mediapipetest.py
 ```
 python 調整box座標.py
 ```
+## 3.資料增強
+```
+python data_aug.py
+```
+取得最後熱像的label後
+對image、label同時做以下資料增強
+
+1. 縮放 (Scaling)
+
+對圖片進行多種比例的縮放：[0.6, 0.8, 1.0, 1.2, 1.4]。
+
+同時會調整關鍵點 (keypoints) 與邊界框 (bounding box) 的座標。
+
+2. 旋轉 (Rotation)
+
+對圖片進行旋轉，角度範圍是 -30° ~ +30°，以 15° 為間隔。
+
+同樣會更新關鍵點與邊界框。
+
+3. 水平翻轉 (Horizontal Flip)
+
+做左右鏡像翻轉。
+
+關鍵點的 X 座標會同步對應調整。
 
 # 模型訓練
 ```
