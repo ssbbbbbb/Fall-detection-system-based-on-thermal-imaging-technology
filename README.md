@@ -1,5 +1,7 @@
 # A Low-Resolution Thermal Imaging-Based System for Skeleton Extraction and Fall Detection
 
+本專案提出一套基於低解析度熱影像的跌倒偵測系統，透過 YOLOv8n-pose 進行骨架關鍵點抽取，再由 GRU 結合自注意力機制 分析時間序列動作。系統具備高敏感度、低誤報率，並能在 Raspberry Pi 5 等低功耗邊緣設備上即時運行，適合應用於智慧家庭、長照機構與醫療場域。
+
 # 硬體設備
 1.thermal camera hat捕捉熱像
 
