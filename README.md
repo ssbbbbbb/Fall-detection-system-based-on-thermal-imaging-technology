@@ -24,7 +24,7 @@ python mediapipetest.py
 ```
 python 調整box座標.py
 ```
-## 3.資料增強
+## 3.熱像資料增強
 ```
 python data_aug.py
 ```
@@ -50,8 +50,13 @@ python data_aug.py
 關鍵點的 X 座標會同步對應調整。
 
 # 模型訓練
+
+熱像骨架生成模型訓練
 ```
 python TRAIN YOLO.py
+```
+跌倒偵測模型訓練
+```
 python gru_train.py
 ```
 
