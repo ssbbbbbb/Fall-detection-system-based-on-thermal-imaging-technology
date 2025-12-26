@@ -52,6 +52,11 @@ python data_aug.py
 # 模型訓練
 
 ## 熱像骨架生成模型訓練
+先凍結 Head 裡面的 cv4，使用少量的資料讓yolo能初步適應新的邊界框任務
+```
+python YOLOBOXTRAIN.py
+```
+整個網路一起使用大量資料訓練，以適應新的骨架生成任務
 ```
 python TRAIN YOLO.py
 ```
