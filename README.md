@@ -59,19 +59,19 @@ python TRAIN YOLO.py
 
 前處理:
 
-1.缺失值處理。
+1. 缺失值處理。
 
-2.MinMax 標準化。
+2. MinMax 標準化。
 
-3.滑動視窗 (Sliding Window) 序列化 (Time Steps = 10)。
+3. 滑動視窗 (Sliding Window) 序列化 (Time Steps = 10)。
 
 不平衡處理 (DTW Interpolation):
 
-1.計算跌倒樣本之間的 DTW 距離。
+1. 計算跌倒樣本之間的 DTW 距離。
 
-2.尋找最近鄰居 (Nearest Neighbors)。
+2. 尋找最近鄰居 (Nearest Neighbors)。
 
-3.在對齊的時間路徑上進行線性插值生成新的跌倒序列。
+3. 在對齊的時間路徑上進行線性插值生成新的跌倒序列。
 
 ```
 python gru_train.py
