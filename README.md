@@ -29,19 +29,19 @@ python skeleton_data_aug.py
 ```
 Once final thermal labels are obtained, both the images and labels undergo the following augmentations:
 
-Scaling
+### Scaling
 
 Images are scaled at multiple ratios: [0.6, 0.8, 1.0, 1.2, 1.4].
 
 Keypoints and bounding box coordinates are adjusted accordingly.
 
-Rotation
+### Rotation
 
 Images are rotated within a range of -30° to +30° at 15° intervals.
 
 Keypoints and bounding boxes are updated to match the rotation.
 
-Horizontal Flip
+### Horizontal Flip
 
 Mirroring the image horizontally.
 
