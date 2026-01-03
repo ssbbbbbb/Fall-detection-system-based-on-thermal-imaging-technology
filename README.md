@@ -60,7 +60,7 @@ python train_yolo.py
 ```
 ## Fall Detection Model Training
 
-### Preprocessing
+### Preprocessing:
 
 1. Missing value handling.
 
