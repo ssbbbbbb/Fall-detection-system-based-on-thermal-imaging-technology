@@ -1,25 +1,25 @@
 import cv2
 import mediapipe as mp
 import os
-import cupy as cp  # 使用 CuPy 進行 GPU 向量化運算
+import cupy as cp  # Using CuPy for GPU vectorized operations
 
-# 初始化 Mediapipe Pose，調高信心閾值
+# Initialize Mediapipe Pose with high confidence thresholds
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(
     static_image_mode=True, 
-    min_detection_confidence=0.8,  # 提升檢測信心閾值
-    min_tracking_confidence=0.8    # 提升追蹤信心閾值
+    min_detection_confidence=0.8,  # Increased detection confidence threshold
+    min_tracking_confidence=0.8    # Increased tracking confidence threshold
 )
 
-# 設定圖片來源資料夾與輸出資料夾
-image_folder = r"E:\FOLDER\yolo\資料集\論文\RGB\RGB"  # 圖片來源資料夾
-output_folder = r"E:\FOLDER\yolo\資料集\論文\RGB\POINT"  # 輸出 txt 檔案的資料夾
-output_image_folder = r"E:\FOLDER\yolo\資料集\論文\RGB\RGB標"  # 輸出處理過圖片的資料夾
+# Set source and output directories
+image_folder = r"E:\FOLDER\yolo\dataset\thesis\RGB\images"
+output_folder = r"E:\FOLDER\yolo\dataset\thesis\RGB\keypoints"
+output_image_folder = r"E:\FOLDER\yolo\dataset\thesis\RGB\labeled_images"
 
 os.makedirs(output_folder, exist_ok=True)
 os.makedirs(output_image_folder, exist_ok=True)
 
-# 指定需要保留的關鍵點，順序依據 Mediapipe PoseLandmark 的定義
+# Define landmarks to keep based on Mediapipe PoseLandmark definition
 KEYPOINTS_TO_SAVE = [
     mp_pose.PoseLandmark.NOSE,
     mp_pose.PoseLandmark.LEFT_EYE,
@@ -40,64 +40,64 @@ KEYPOINTS_TO_SAVE = [
     mp_pose.PoseLandmark.RIGHT_ANKLE
 ]
 
-# 迭代資料夾中的每一張圖片
+# Iterate through each image in the source folder
 for image_file in os.listdir(image_folder):
     if image_file.lower().endswith(('.jpg', '.jpeg', '.png')):
         image_path = os.path.join(image_folder, image_file)
         image = cv2.imread(image_path)
         if image is None:
-            print(f"無法讀取 {image_path}")
+            print(f"Failed to read image: {image_path}")
             continue
 
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        h, w, _ = image.shape  # 取得圖片高度與寬度
+        h, w, _ = image.shape  # Get image dimensions
 
-        # 使用 Mediapipe 偵測姿勢
+        # Detect pose using Mediapipe
         results = pose.process(image_rgb)
 
-        # 構建輸出檔案路徑
+        # Construct output file paths
         txt_filename = os.path.splitext(image_file)[0] + '.txt'
         output_txt_path = os.path.join(output_folder, txt_filename)
         output_image_path = os.path.join(output_image_folder, image_file)
 
-        # 開啟 .txt 檔案以保存關鍵點座標
+        # Open .txt file to save keypoint coordinates
         with open(output_txt_path, 'w') as f:
             if results.pose_landmarks:
-                # 將欲保留的關鍵點索引轉成整數列表
+                # Get index list for selected landmarks
                 indices = [kp.value for kp in KEYPOINTS_TO_SAVE]
 
-                # 取得所有關鍵點的正規化座標，並利用 CuPy 進行向量化運算
+                # Extract normalized coordinates and use CuPy for vectorization
                 all_landmarks = results.pose_landmarks.landmark
-                # 利用列表生成式取得所有關鍵點的 x 與 y 座標（浮點數）
                 x_coords = cp.array([lm.x for lm in all_landmarks])
                 y_coords = cp.array([lm.y for lm in all_landmarks])
                 
-                # 根據指定索引選取所需的關鍵點
+                # Select specific landmarks using indices
                 sel_x = cp.take(x_coords, indices)
                 sel_y = cp.take(y_coords, indices)
                 
-                # 將正規化座標轉換為像素座標（乘上圖片寬高），並轉換為整數
+                # Convert normalized coordinates to pixel coordinates
                 sel_x_pixels = (sel_x * w).astype(cp.int32)
                 sel_y_pixels = (sel_y * h).astype(cp.int32)
                 
-                # 逐一處理每個關鍵點，使用 .item() 取得單一數值，不做整體轉換
+                # Process each keypoint individually
                 for i in range(int(sel_x.shape[0])):
                     x_pix = int(sel_x_pixels[i].item())
                     y_pix = int(sel_y_pixels[i].item())
                     x_norm = float(sel_x[i].item())
                     y_norm = float(sel_y[i].item())
                     
-                    # 在圖片上繪製關鍵點（圓點顏色：藍色）
+                    # Draw keypoint on the image (Color: Blue)
                     cv2.circle(image, (x_pix, y_pix), 5, (255, 0, 0), -1)
-                    # 寫入文字檔，格式： normalized_x normalized_y（小數點後 6 位）
+                    
+                    # Write normalized coordinates to file (Precision: 6 decimal places)
                     f.write(f"{x_norm:.6f} {y_norm:.6f} ")
                 f.write("\n")
             else:
-                # 若無偵測到關鍵點，也建立一個空檔案
+                # Create an empty file if no pose is detected
                 f.write("\n")
 
-        # 儲存繪製好關鍵點的圖片
+        # Save the labeled image
         cv2.imwrite(output_image_path, image)
-        print(f"處理 {image_file}，輸出 {output_txt_path} 與 {output_image_path}")
+        print(f"Processed: {image_file} -> Saved to: {output_txt_path} and {output_image_path}")
 
-print("批次處理完成!")
+print("Batch processing completed!")

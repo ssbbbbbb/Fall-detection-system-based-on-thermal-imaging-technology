@@ -1,29 +1,28 @@
 import os
 import glob
-import cupy as cp       # GPU 加速
+import cupy as cp       # GPU acceleration
 import numpy as np
 import cv2
 import pandas as pd
 from tqdm import tqdm
 from PIL import Image, ImageFilter
 
-# 從 cupyx.scipy.ndimage 載入 GPU 版形態學函數
+# Load GPU-based morphological functions from cupyx.scipy.ndimage
 from cupyx.scipy.ndimage import label as cp_label, binary_dilation, binary_erosion, gaussian_filter
 
 # ---------------------
-# 設定參數
+# Parameter settings
 # ---------------------
-window_size = 100          # 滑動窗口大小（用於原始溫度影像統計）
-resolution_scale = 3       # 升級解析度的倍數
-binarization_thresh = 90   # 二值化門檻
+window_size = 100          # Sliding window size (for raw temperature image statistics)
+resolution_scale = 3       # Upscaling factor
+binarization_thresh = 90   # Binarization threshold
 
-# 路徑設定（請根據實際情況修改）
-input_folder = r"C:\Users\binbin\Desktop\專題影片\0516_data-20250519T133421Z-1-001\0516_data\新增資料夾"  # CSV 檔案所在資料夾
-output_root = r"C:\Users\binbin\Desktop\專題影片\0516_data-20250519T133421Z-1-001\0516_data\新增資料夾\新增資料夾"                  # 所有輸出會依 CSV 檔名建立子資料夾
-
+# Path settings (modify according to your environment)
+input_folder = r"C:\Users\binbin\Desktop\Project_Video\0516_data-20250519T133421Z-1-001\0516_data\New_Folder"  # Folder containing CSV files
+output_root = r"C:\Users\binbin\Desktop\Project_Video\0516_data-20250519T133421Z-1-001\0516_data\New_Folder\New_Folder"  # Output root (subfolders per CSV)
 
 # ---------------------
-# 基本處理函數
+# Basic processing functions
 # ---------------------
 def load_temperature_data_from_csv(file_path):
     try:
@@ -31,7 +30,7 @@ def load_temperature_data_from_csv(file_path):
         if data.shape[1] == 4960:
             return np.array([row.reshape(62, 80) for row in data])
         else:
-            print(f"Warning: {file_path} 資料寬度 {data.shape[1]} 不符 4960，跳過。")
+            print(f"Warning: {file_path} width {data.shape[1]} is not 4960, skipping.")
             return None
     except Exception as e:
         print(f"Error reading {file_path}: {e}")
@@ -60,7 +59,7 @@ def matrix_to_image(matrix, colormap=cv2.COLORMAP_PLASMA):
     return adjust_gamma(colored, gamma=1.5)
 
 # ---------------------
-# GPU 形態學處理
+# GPU morphological processing
 # ---------------------
 def process_foreground_steps_gpu(foreground_mask, min_cluster_size, thresh_val):
     mask_gpu = cp.array(foreground_mask.astype(bool))
@@ -97,7 +96,7 @@ def process_foreground_steps_gpu(foreground_mask, min_cluster_size, thresh_val):
     }
 
 # ---------------------
-# 主處理與儲存
+# Main processing and saving
 # ---------------------
 def save_foreground_masks(input_file, mask_folder, image_folder, box_folder, morphology_root, thresh_val):
     os.makedirs(mask_folder, exist_ok=True)
@@ -129,6 +128,7 @@ def save_foreground_masks(input_file, mask_folder, image_folder, box_folder, mor
         else:
             means = MT_up_gpu
             stds = cp.ones_like(MT_up_gpu)
+
         diff = MT_up_gpu - means
         prob = (1/(cp.sqrt(2*cp.pi)*stds)) * cp.exp(-0.5*(diff/stds)**2)
         thresh = (1/(cp.sqrt(2*cp.pi)*stds)) * cp.exp(-0.5*(1.3)**2)
@@ -154,7 +154,7 @@ def save_foreground_masks(input_file, mask_folder, image_folder, box_folder, mor
         col_img = matrix_to_image(masked_temp)
         cv2.imwrite(os.path.join(image_folder, f"frame_{idx+1:05d}.png"), col_img)
 
-        # 儲存灰階圖
+        # Save grayscale image
         norm_gray = cv2.normalize(MT_up, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
         cv2.imwrite(os.path.join(image_folder, f"gray_{idx+1:05d}.png"), norm_gray)
 
@@ -180,7 +180,7 @@ def save_foreground_masks(input_file, mask_folder, image_folder, box_folder, mor
                 sliding[:,:,-1] = MT_up_gpu
 
 # ---------------------
-# 合成遮罩與彩色影像
+# Combine masks and color images
 # ---------------------
 def combine_images(mask_folder, image_folder, output_folder):
     os.makedirs(output_folder, exist_ok=True)
@@ -197,7 +197,7 @@ def combine_images(mask_folder, image_folder, output_folder):
         comp.save(os.path.join(output_folder, f"result_{im}"))
 
 # ---------------------
-# 影片生成
+# Video generation
 # ---------------------
 def create_video_from_composites(composite_folder, output_video_path, fps=10):
     files = sorted([f for f in os.listdir(composite_folder) if f.startswith('result_')])
@@ -249,7 +249,7 @@ def create_videos_for_morph_steps(morphology_root, output_root, fps=10):
         print(f"Saved {step} video to {output_video}")
 
 # ---------------------
-# 主程式
+# Main program
 # ---------------------
 if __name__ == '__main__':
     csv_files = glob.glob(os.path.join(input_folder, '*.csv'))

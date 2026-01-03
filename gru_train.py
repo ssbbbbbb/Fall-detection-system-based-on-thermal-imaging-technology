@@ -15,19 +15,19 @@ import traceback
 from scipy.spatial.distance import euclidean
 from fastdtw import fastdtw  # For DTW computation
 
-# 檢查 GPU 可用性
+# Check GPU availability
 if not torch.cuda.is_available():
-    raise RuntimeError("GPU 不可用，請檢查 PyTorch 安裝或 NVIDIA 驅動")
+    raise RuntimeError("GPU is not available. Please check PyTorch installation or NVIDIA drivers.")
 
-# 設置隨機種子
+# Set random seeds
 torch.manual_seed(42)
 np.random.seed(42)
 torch.cuda.manual_seed_all(42)
 
-# 定義保存路徑
+# Define save path
 save_path = r"C:\Users\USER\Desktop\Independent Study\Human-Falling-Detect-Tracks-master\Human-Falling-Detect-Tracks-master\0402\keypoints\adddtw\0424"
 
-# 定義超參數
+# Define hyperparameters
 TIME_STEPS = 10
 BATCH_SIZE = 32
 NUM_EPOCHS = 50
@@ -109,7 +109,7 @@ def load_and_preprocess_data(csv_folder):
     for filename in os.listdir(csv_folder):
         if filename.endswith(".csv"):
             file_path = os.path.join(csv_folder, filename)
-            print(f"正在處理檔案: {filename}")
+            print(f"Processing file: {filename}")
             
             df = pd.read_csv(file_path)
             keypoints_cols = [col for col in df.columns if 'kp_' in col]
@@ -117,7 +117,7 @@ def load_and_preprocess_data(csv_folder):
             labels = df['fall'].values
             
             if np.any(np.isnan(labels)):
-                print(f"警告: 檔案 {filename} 的 'fall' 欄位包含 {np.sum(np.isnan(labels))} 個 NaN 值")
+                print(f"Warning: File {filename} 'fall' column contains {np.sum(np.isnan(labels))} NaN values")
                 labels = np.nan_to_num(labels, nan=0.0)
             
             all_features.append(features)
@@ -127,10 +127,10 @@ def load_and_preprocess_data(csv_folder):
     labels = np.hstack(all_labels)
     
     if np.any(np.isnan(labels)):
-        print(f"警告: 合併後的 labels 包含 {np.sum(np.isnan(labels))} 個 NaN 值")
+        print(f"Warning: Merged labels contain {np.sum(np.isnan(labels))} NaN values")
         labels = np.nan_to_num(labels, nan=0.0)
     
-    print(f"Labels 統計: 非跌倒 {sum(labels==0)}, 跌倒 {sum(labels==1)}, 其他值 {sum((labels!=0) & (labels!=1))}")
+    print(f"Label Statistics: Non-fall {sum(labels==0)}, Fall {sum(labels==1)}, Others {sum((labels!=0) & (labels!=1))}")
     
     features = np.nan_to_num(features, nan=0.0)
     scaler = MinMaxScaler()
@@ -144,26 +144,21 @@ def create_sequences(data, labels, time_steps):
         seq = data[i:i + time_steps]
         label = labels[i + time_steps - 1]
         if np.isnan(label):
-            print(f"警告: 在索引 {i + time_steps - 1} 處發現 NaN label")
+            print(f"Warning: Found NaN label at index {i + time_steps - 1}")
             continue
         X.append(seq)
         y.append(label)
     X, y = np.array(X), np.array(y)
     
     if np.any(np.isnan(y)):
-        print(f"錯誤: 序列化的 y 包含 {np.sum(np.isnan(y))} 個 NaN 值")
-        raise ValueError("序列化後的 y 包含 NaN，請檢查數據")
+        print(f"Error: Sequentialized y contains {np.sum(np.isnan(y))} NaN values")
+        raise ValueError("Serialized y contains NaN, please check the data")
     
     return X, y
 
 def dtw_distance(x, y):
     """
     Compute DTW distance between two time series.
-    Args:
-        x: numpy array of shape (time_steps, features)
-        y: numpy array of shape (time_steps, features)
-    Returns:
-        distance: DTW distance
     """
     distance, _ = fastdtw(x, y, dist=euclidean)
     return distance
@@ -171,13 +166,6 @@ def dtw_distance(x, y):
 def find_nearest_neighbors(X, y, n_neighbors, class_label):
     """
     Find nearest neighbors for samples of a given class using DTW.
-    Args:
-        X: numpy array of shape (n_samples, time_steps, features)
-        y: numpy array of shape (n_samples,)
-        n_neighbors: number of neighbors to find
-        class_label: class to find neighbors for
-    Returns:
-        neighbors: list of lists containing indices of nearest neighbors
     """
     class_indices = np.where(y == class_label)[0]
     neighbors = []
@@ -197,12 +185,6 @@ def find_nearest_neighbors(X, y, n_neighbors, class_label):
 def interpolate_time_series(x1, x2, alpha=0.5):
     """
     Interpolate between two time series using DTW alignment.
-    Args:
-        x1: numpy array of shape (time_steps, features)
-        x2: numpy array of shape (time_steps, features)
-        alpha: interpolation factor (0 to 1)
-    Returns:
-        synthetic: interpolated time series
     """
     distance, path = fastdtw(x1, x2, dist=euclidean)
     synthetic = np.zeros_like(x1)
@@ -215,23 +197,15 @@ def interpolate_time_series(x1, x2, alpha=0.5):
 def apply_dtw_interpolation(X, y, n_neighbors=5, sampling_strategy='auto'):
     """
     Apply DTW-based interpolation to balance time series dataset.
-    Args:
-        X: numpy array of shape (n_samples, time_steps, n_features)
-        y: numpy array of shape (n_samples,)
-        n_neighbors: number of neighbors to use for interpolation
-        sampling_strategy: 'auto' or float specifying ratio of minority to majority
-    Returns:
-        X_resampled: resampled X
-        y_resampled: resampled y
     """
     if np.any(np.isnan(y)):
-        print(f"錯誤: DTW 輸入的 y 包含 {np.sum(np.isnan(y))} 個 NaN 值")
-        raise ValueError("DTW 無法處理包含 NaN 的 y")
+        print(f"Error: DTW input y contains {np.sum(np.isnan(y))} NaN values")
+        raise ValueError("DTW cannot process y containing NaN")
     
     # Count samples per class
     n_pos_samples = sum(y == 1)  # Minority class (falls)
     n_neg_samples = sum(y == 0)  # Majority class (non-falls)
-    print(f"正類樣本數 (跌倒): {n_pos_samples}, 負類樣本數 (非跌倒): {n_neg_samples}")
+    print(f"Positive samples (Fall): {n_pos_samples}, Negative samples (Non-fall): {n_neg_samples}")
     
     # Determine number of synthetic samples needed
     if sampling_strategy == 'auto':
@@ -240,12 +214,12 @@ def apply_dtw_interpolation(X, y, n_neighbors=5, sampling_strategy='auto'):
         n_synthetic = int(n_neg_samples * sampling_strategy) - n_pos_samples
     
     if n_synthetic <= 0:
-        print("不需要生成合成樣本，數據已平衡或正類樣本足夠")
+        print("No synthetic samples needed, data is balanced or positive samples are sufficient")
         return X, y
     
     # Find nearest neighbors for minority class
     n_neighbors = min(n_neighbors, max(1, n_pos_samples - 1))
-    print(f"設置 DTW 插值 n_neighbors={n_neighbors}")
+    print(f"Setting DTW interpolation n_neighbors={n_neighbors}")
     neighbors = find_nearest_neighbors(X, y, n_neighbors, class_label=1)
     
     # Generate synthetic samples
@@ -273,8 +247,8 @@ def apply_dtw_interpolation(X, y, n_neighbors=5, sampling_strategy='auto'):
     X_resampled = np.vstack([X, X_synthetic])
     y_resampled = np.hstack([y, y_synthetic])
     
-    print(f"生成 {len(X_synthetic)} 個合成樣本")
-    print(f"DTW 插值後數據分布: 非跌倒 {sum(y_resampled==0)}, 跌倒 {sum(y_resampled==1)}")
+    print(f"Generated {len(X_synthetic)} synthetic samples")
+    print(f"Data distribution after DTW interpolation: Non-fall {sum(y_resampled==0)}, Fall {sum(y_resampled==1)}")
     
     return X_resampled, y_resampled
 
@@ -372,7 +346,7 @@ def evaluate_model(model, test_loader, device, best_params=None):
                 outputs, attention_weights = outputs
                 all_attention_weights.append(attention_weights.cpu().numpy())
             else:
-                all_attention_weights.append(np.array([]))  # 空陣列作為佔位符
+                all_attention_weights.append(np.array([]))  # Placeholder
             y_scores.extend(torch.sigmoid(outputs).cpu().numpy())
             y_true.extend(y_batch.cpu().numpy())
     
@@ -382,7 +356,7 @@ def evaluate_model(model, test_loader, device, best_params=None):
     avg_inference_time = np.mean(inference_times) * 1000
     print(f"Average inference time per batch: {avg_inference_time:.2f} ms")
     
-    # 過濾非空注意力權重
+    # Filter non-empty attention weights
     valid_attention_weights = [w for w in all_attention_weights if w.size > 0]
     if valid_attention_weights:
         all_attention_weights = np.concatenate(valid_attention_weights, axis=0)
@@ -447,14 +421,14 @@ def evaluate_model(model, test_loader, device, best_params=None):
         print(f"Specificity: {specificity:.4f}")
         print("Classification Report:\n", classification_report(y_true, y_pred_optimal, labels=[0, 1], zero_division=0))
     
-    # 將最佳參數添加到結果中
+    # Add best parameters to results
     results_df = pd.DataFrame(results)
     if best_params:
         for key, value in best_params.items():
-            results_df[key] = value  # 為每一行添加最佳參數
+            results_df[key] = value  # Add best params for each row
     
     results_df.to_csv(os.path.join(save_path, 'evaluation_results.csv'), index=False)
-    print("評估結果和最佳參數已保存至 'evaluation_results.csv'")
+    print("Evaluation results and best parameters saved to 'evaluation_results.csv'")
     
     if len(fpr) > 0 and len(tpr) > 0:
         roc_auc = auc(fpr, tpr)
@@ -471,11 +445,11 @@ def evaluate_model(model, test_loader, device, best_params=None):
         plt.close()
         print(f"AUC: {roc_auc:.2f}")
     
-    precision, recall, _ = precision_recall_curve(y_true, y_scores)
-    if len(recall) > 0 and len(precision) > 0:
-        pr_auc = auc(recall, precision)
+    precision_pts, recall_pts, _ = precision_recall_curve(y_true, y_scores)
+    if len(recall_pts) > 0 and len(precision_pts) > 0:
+        pr_auc = auc(recall_pts, precision_pts)
         plt.figure(figsize=(8, 6))
-        plt.plot(recall, precision, label=f'Precision-Recall Curve (AUC = {pr_auc:.2f})')
+        plt.plot(recall_pts, precision_pts, label=f'Precision-Recall Curve (AUC = {pr_auc:.2f})')
         plt.xlabel('Recall')
         plt.ylabel('Precision')
         plt.title('Precision-Recall Curve')
@@ -539,15 +513,15 @@ def objective(trial, train_dataset, val_dataset, y_resampled, device):
     weight_decay = trial.suggest_float('weight_decay', 1e-5, 1e-3, log=True)
     
     try:
-        print("正在初始化 train_loader...")
+        print("Initializing train_loader...")
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=True)
-        print("train_loader 初始化完成")
+        print("train_loader initialized")
         
-        print("正在初始化 val_loader...")
+        print("Initializing val_loader...")
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0, pin_memory=True)
-        print("val_loader 初始化完成")
+        print("val_loader initialized")
     except Exception as e:
-        print(f"DataLoader 初始化失敗: {str(e)}")
+        print(f"DataLoader initialization failed: {str(e)}")
         print(traceback.format_exc())
         raise
     
@@ -568,21 +542,21 @@ def objective(trial, train_dataset, val_dataset, y_resampled, device):
 
 def main():
     device = torch.device('cuda')
-    print(f"使用設備: {device}")
-    print(f"GPU 設備名稱: {torch.cuda.get_device_name(0)}")
+    print(f"Using device: {device}")
+    print(f"GPU Device Name: {torch.cuda.get_device_name(0)}")
     
     torch.cuda.empty_cache()
     
     csv_folder = r"C:\Users\USER\Desktop\Independent Study\Human-Falling-Detect-Tracks-master\Human-Falling-Detect-Tracks-master\0402\keypoints\adddtw\0424\csv"
     features, labels, scaler = load_and_preprocess_data(csv_folder)
     
-    print(f"原始數據分布: 非跌倒 {sum(labels==0)} ({100*sum(labels==0)/len(labels):.2f}%), 跌倒 {sum(labels==1)} ({100*sum(labels==1)/len(labels):.2f}%)")
+    print(f"Original data distribution: Non-fall {sum(labels==0)} ({100*sum(labels==0)/len(labels):.2f}%), Fall {sum(labels==1)} ({100*sum(labels==1)/len(labels):.2f}%)")
     
     X, y = create_sequences(features, labels, TIME_STEPS)
-    print(f"序列化後數據: 非跌倒 {sum(y==0)}, 跌倒 {sum(y==1)}")
+    print(f"Data after sequentialization: Non-fall {sum(y==0)}, Fall {sum(y==1)}")
     
     X_resampled, y_resampled = apply_dtw_interpolation(X, y, n_neighbors=5, sampling_strategy='auto')
-    print(f"DTW插值後數據分布: 非跌倒 {sum(y_resampled==0)} ({100*sum(y_resampled==0)/len(y_resampled):.2f}%), 跌倒 {sum(y_resampled==1)} ({100*sum(y_resampled==1)/len(y_resampled):.2f}%)")
+    print(f"Data distribution after DTW interpolation: Non-fall {sum(y_resampled==0)} ({100*sum(y_resampled==0)/len(y_resampled):.2f}%), Fall {sum(y_resampled==1)} ({100*sum(y_resampled==1)/len(y_resampled):.2f}%)")
     
     X_temp, X_test, y_temp, y_test = train_test_split(X_resampled, y_resampled, test_size=0.1, random_state=42, stratify=y_resampled)
     X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.2222, random_state=42, stratify=y_temp)
@@ -622,24 +596,24 @@ def main():
     alpha = study.best_params['alpha']
     gamma = study.best_params['gamma']
     
-    # 保存最佳參數
+    # Save best parameters
     best_params = study.best_params
     
-    print("正在初始化 train_loader...")
+    print("Initializing train_loader...")
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0, pin_memory=True)
-    print("train_loader 初始化完成")
+    print("train_loader initialized")
     
-    print("正在初始化 val_loader...")
+    print("Initializing val_loader...")
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0, pin_memory=True)
-    print("val_loader 初始化完成")
+    print("val_loader initialized")
     
-    print("正在初始化 test_loader...")
+    print("Initializing test_loader...")
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0, pin_memory=True)
-    print("test_loader 初始化完成")
+    print("test_loader initialized")
     
-    print("正在初始化 test_loader_imbalanced...")
+    print("Initializing test_loader_imbalanced...")
     test_loader_imbalanced = DataLoader(test_dataset_imbalanced, batch_size=BATCH_SIZE, shuffle=False, num_workers=0, pin_memory=True)
-    print("test_loader_imbalanced 初始化完成")
+    print("test_loader_imbalanced initialized")
     
     model = GRUWithAttention(INPUT_SIZE, HIDDEN_SIZE, NUM_LAYERS, OUTPUT_SIZE, DROPOUT).to(device)
     criterion = FocalLoss(alpha=alpha, gamma=gamma).to(device)
@@ -665,7 +639,7 @@ def main():
     
     torch.save(model.state_dict(), os.path.join(save_path, "gru_fall_detection.pth"))
     torch.save(scaler, os.path.join(save_path, "scaler.pth"))
-    print("模型和scaler已保存")
+    print("Model and scaler saved")
     
     torch.cuda.empty_cache()
 
