@@ -68,13 +68,13 @@ python train_yolo.py
 
 3. Sliding Window serialization (Time Steps = 10).
 
-4. Imbalance Handling (DTW Interpolation):
+### Imbalance Handling (DTW Interpolation):
 
-   Calculate DTW (Dynamic Time Warping) distances between fall samples.
+1. Calculate DTW (Dynamic Time Warping) distances between fall samples.
 
-   Identify Nearest Neighbors.
+2. Identify Nearest Neighbors.
 
-   Generate new fall sequences via linear interpolation along the aligned time path.
+3. Generate new fall sequences via linear interpolation along the aligned time path.
 
 ```
 python gru_train.py
