@@ -60,21 +60,21 @@ python train_yolo.py
 ```
 ## Fall Detection Model Training
 
-Preprocessing:
+### Preprocessing
 
-Missing value handling.
+1. Missing value handling.
 
-MinMax Normalization.
+2. MinMax Normalization.
 
-Sliding Window serialization (Time Steps = 10).
+3. Sliding Window serialization (Time Steps = 10).
 
-Imbalance Handling (DTW Interpolation):
+4. Imbalance Handling (DTW Interpolation):
 
-Calculate DTW (Dynamic Time Warping) distances between fall samples.
+   Calculate DTW (Dynamic Time Warping) distances between fall samples.
 
-Identify Nearest Neighbors.
+   Identify Nearest Neighbors.
 
-Generate new fall sequences via linear interpolation along the aligned time path.
+   Generate new fall sequences via linear interpolation along the aligned time path.
 
 ```
 python gru_train.py
