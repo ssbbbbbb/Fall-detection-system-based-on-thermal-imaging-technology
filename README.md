@@ -92,7 +92,7 @@ python gru_train.py
 ![Accuracy](confusion_matrix.jpg)
 
 ## AUPRC
-![Accuracy](test_result_auprc
+![Accuracy](test_result_auprc.png)
 .png)
 
 ## DEMO
