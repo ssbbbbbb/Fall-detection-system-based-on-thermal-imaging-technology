@@ -95,9 +95,6 @@ python gru_train.py
 ![Accuracy](test_result_auprc.png)
 .png)
 
-## DEMO
-https://drive.google.com/file/d/1F4gGI4SRWbgN1tfDQpohJoe9S3fSXMgZ/view?usp=drive_link
-
 # Final Execution on Raspberry Pi
 ```
 python run_on_Raspberry_Pi_5.py
@@ -117,3 +114,6 @@ python run_on_Raspberry_Pi_5.py
 | :--- | :--- |
 | **`yolo_thermal_skeleton_training_data.zip`** | [Download](https://drive.google.com/file/d/1peC_V7-94WXNidvGdvbxPRQ3Me3lyJz8/view?usp=drive_link) |
 | **`gru_fallen_keypoint_data.zip`** | [Download](https://drive.google.com/file/d/1JzPi80DqgPxZ71H5jt1C_MuYqAPBh16q/view?usp=drive_link) |
+
+## DEMO
+https://drive.google.com/file/d/1F4gGI4SRWbgN1tfDQpohJoe9S3fSXMgZ/view?usp=drive_link
