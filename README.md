@@ -93,7 +93,6 @@ python gru_train.py
 
 ## AUPRC
 ![Accuracy](test_result_auprc.png)
-.png)
 
 # Final Execution on Raspberry Pi
 ```
