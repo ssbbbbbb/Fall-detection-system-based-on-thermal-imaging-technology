@@ -105,7 +105,7 @@ python run_on_Raspberry_Pi_5.py
 | :--- | :--- | :--- | :--- |
 | **`yolo_pose_model.pt`** | **YOLO Pose** | **Feature Extraction**: Detects human figures in thermal frames and identifies 17 key body joints (total 34 coordinate values). | [Download](https://drive.google.com/file/d/1Olg-yHHi5hESr3do-3YhIDSk9EPAcAsA/view?usp=drive_link) |
 | **`keypoint_scaler.pth`** | **MinMaxScaler** | **Data Normalization**: Scales raw coordinates to a standard range (e.g., -1 to 1) to ensure consistent input for the GRU model. | [Download](https://drive.google.com/file/d/1jzFr45oXH1JrT94R0xWFa70LkDYn-o6T/view?usp=drive_link) |
-| **`fall_detection_gru.pth`** | **GRU + Attention** | **Action Recognition**: Analyzes the temporal trajectory of the last 10 frames using an attention mechanism to classify "fall" patterns. | [Download](https://drive.google.com/file/d/1wAQbKZK12HQj_-iNQHvKLHO-KB5lPb36/view?usp=sharing) |
+| **`fall_detection_gru.pth`** | **GRU + Attention** | **Action Recognition**: Analyzes the temporal trajectory of the last 10 frames using an attention mechanism to classify "fall" patterns. | [Download](https://drive.google.com/file/d/1aXCHJ2xOHDQC4uOrF-Vqgodkdp0VHpWN/view?usp=sharing) |
 
 ## Data
 
