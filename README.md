@@ -113,6 +113,7 @@ python run_on_Raspberry_Pi_5.py
 | :--- | :--- |
 | **`yolo_thermal_skeleton_training_data.zip`** | [Download](https://drive.google.com/file/d/1fnrwhpCuCtOxVz8bdmcFoOjsv0A9CAxg/view?usp=drive_link) |
 | **`gru_fallen_keypoint_data.zip`** | [Download](https://drive.google.com/file/d/1cNUYTnprNcU4Xlj2_5tlhfZvYHrO2L3V/view?usp=drive_link) |
+| **`test_data.zip`** | [Download](https://drive.google.com/file/d/1hVrUDfkTNZ6Fo-Zgv2sebUQoS9qF_aJJ/view?usp=sharing) |
 
 ## DEMO
 https://drive.google.com/file/d/1F4gGI4SRWbgN1tfDQpohJoe9S3fSXMgZ/view?usp=drive_link
