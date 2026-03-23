@@ -89,7 +89,7 @@ python gru_train.py
 ![Accuracy](yolo_loss_history.png)
 
 ## test_confusion_matrix
-![Accuracy](confusion_matrix.jpg)
+![Accuracy](confusion_matrix.png)
 
 ## AUPRC
 ![Accuracy](test_result_auprc.png)
